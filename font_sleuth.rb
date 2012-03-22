@@ -83,16 +83,17 @@ def dir_glob(font_html, directory)
   end
 end
 
+def list_contents(dir)
+  font_html = ["<ol>"]
+  dir_glob(font_html, dir)
+  font_html << "</ol>"
+  font_html.join("\n")
+end
+
 
 font_file.puts template_header
 
-font_html = ["<ol>"]
-
-dir_glob(font_html, File.join(Rails.root, "app", "assets", "images"))
-
-font_html << "</ol>"
-
-font_file.puts font_html.join("\n")
+font_file.puts list_contents(File.join(Rails.root, "app", "assets", "images"))
 
 font_file.puts template_footer
 
