@@ -8,7 +8,7 @@ TEMPLATE
 color_file.puts template_top
 
 def color_lookup(color_code)
-  c = `grep -ir '#{color_code}' #{File.join(Rails.root, 'app', 'assets', 'stylesheets')}`.split
+  c = `egrep -ir '(#{color_code})( |;)' #{File.join(Rails.root, 'app', 'assets', 'stylesheets')}`.split
 end
 
 colors = `egrep --no-filename -ior '(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)' #{File.join(Rails.root, 'app', 'assets', 'stylesheets')}`.split.map{|c| c.gsub(';', '').gsub(' ', '').downcase }.uniq.sort
