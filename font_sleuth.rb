@@ -1,3 +1,7 @@
+ActionDispatch::Routing::UrlFor 
+include Rails.application.routes.url_helpers
+default_url_options[:host] = 'www.mysite.com'
+
 font_file = File.new(File.join(Rails.root, 'tmp', 'fonts.html'), "w+")
 template_header = <<TEMPLATE
 <!doctype html>
@@ -73,11 +77,15 @@ TEMPLATE
 
 def dir_glob(font_html, directory)
   Dir.glob(File.join(directory, "*")).each do |element|
-    font_html << "<li>#{File.basename(element)}"
     if File.directory?(element)
+      font_html << "<li class='directory'>"
+      font_html << File.basename(element)
       font_html << "<ol>"
       dir_glob(font_html, element)
       font_html << "</ol>"
+    else
+      font_html << "<li class='item #{File.extname(element)}'>"
+      font_html << link_to("#{File.basename(element)}", asset_path(File.dirname(element).gsub(directory, '')))
     end
     font_html << "</li>"
   end
