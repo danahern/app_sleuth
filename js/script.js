@@ -19,7 +19,7 @@ $(document).ready(function() {
       //console.log("you clicked close.");
       var answer = confirm("You Sure You Want to Delete This Swatch?");
       if (answer) {
-        $(this).parent.remove()
+        $(this).parents("li.swatch").remove()
       }
     }); 
 
