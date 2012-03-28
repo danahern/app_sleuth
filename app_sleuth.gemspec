@@ -14,4 +14,7 @@ Gem::Specification.new do |gem|
   gem.name          = "app_sleuth"
   gem.require_paths = ["lib"]
   gem.version       = AppSleuth::VERSION
+
+  gem.add_dependency "sinatra"
+  
 end

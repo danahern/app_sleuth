@@ -1,8 +1,15 @@
 module AppSleuth
   class Colors
     class << self
+      def hex_shortcode(color)
+        return color unless color.length == 4
+        hex = color.gsub('#', '').split('')
+        hex = "##{hex[0]}#{hex[0]}#{hex[1]}#{hex[1]}#{hex[2]}#{hex[2]}"
+      end
+
       def gather(location)
         colors = `egrep --no-filename -ior '(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)' #{location}`.split.map{|c| c.gsub(';', '').gsub(' ', '').downcase }.uniq.sort
+        colors.map{|c| hex_shortcode(c) }.uniq.sort
       end
       
       def color_location(color_code, location)
