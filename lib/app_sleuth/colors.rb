@@ -8,12 +8,12 @@ module AppSleuth
       end
 
       def gather(location)
-        colors = `egrep --no-filename -ior '(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)' #{location}`.split.map{|c| c.gsub(';', '').gsub(' ', '').downcase }.uniq.sort
+        colors = `egrep --include='*.*css' --no-filename -ior '(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)' #{location}`.split.map{|c| c.gsub(';', '').gsub(' ', '').downcase }.uniq.sort
         colors.map{|c| hex_shortcode(c) }.uniq.sort
       end
       
       def color_location(color_code, location)
-        c = `egrep -ir '(#{color_code})( |;)' #{location}`.split("\n")
+        c = `egrep --include='*.*css' -ir '(#{color_code})( |;)' #{location}`.split("\n")
       end
 
       def color_swatch(color, location)
@@ -25,7 +25,8 @@ module AppSleuth
       def generate_report(location)
         colors = gather(location)
         colors = colors.map{|c| color_swatch(c, location) }.join("\n\n")
-        rendered_file = ERB.new(File.read("lib/app_sleuth/server/views/colors.html.erb"))
+        gem_dir = File.dirname(File.expand_path(__FILE__))
+        rendered_file = ERB.new(File.read(File.join(gem_dir, "server/views/colors.html.erb")))
         rendered_file.result(binding)
       end
     end

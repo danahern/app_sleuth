@@ -10,9 +10,13 @@ module AppSleuth
     end
 
     set :static, true
+
+    get '/' do
+      "<a href='/colors'>Colors</a>"
+    end
     
     get '/colors' do
-      AppSleuth::Colors.generate_report(params[:location])
+      File.read("/tmp/colors.html")
     end
   end
 end

@@ -1,2 +1,20 @@
 #!/usr/bin/env ruby
-raise [ARGV, __FILE__].inspect
+puts "Loading Environment"
+require 'app_sleuth'
+
+dir = Dir.getwd
+colors_file = File.new("/tmp/colors.html", "w+")
+
+puts "Generating Color Report..."
+
+color_report = AppSleuth::Colors.generate_report(dir)
+colors_file.puts color_report
+colors_file.close
+
+puts "Done with color report"
+
+puts "Starting Server on port 4567"
+
+AppSleuth::Server.run!
+
+puts "Go to http://localhost:4567"
