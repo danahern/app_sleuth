@@ -17,8 +17,8 @@ module AppSleuth
 
       def generate_report(location)
         colors = gather(location)
-        swatches = colors.map{|c| color_swatch(c, location) }
-        rendered_file = ERB.new(File.read("views/colors.html.erb"))
+        colors = colors.map{|c| color_swatch(c, location) }.join("\n\n")
+        rendered_file = ERB.new(File.read("lib/app_sleuth/server/views/colors.html.erb"))
         rendered_file.result(binding)
       end
     end
