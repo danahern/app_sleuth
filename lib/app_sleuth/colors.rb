@@ -91,7 +91,7 @@ module AppSleuth
         css_colors.each do |c|
           color_value = c.first
           attributes = attributes_from(declarations, color_value)
-          color = Color::RGB.const_get(c.classify)
+          color = Color::RGB.const_get(color_value.classify)
           if colors.has_key?(color.css_rgba)
             colors[color.css_rgba][:instances] << instance("name", specificity, selector, css_file, attributes)
             colors[color.css_rgba][:count] += 1
