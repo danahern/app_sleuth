@@ -12,12 +12,16 @@ module AppSleuth
       end
 
 
-      def regex_rgb
-        "(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)"
+      def regex_hex
+        /(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)/
       end
 
       def regex_hsla
-        "(hsl|hsla)(.*?)( |;)"
+        /(hsla|hsl)\((.*?)\)( |;)/
+      end
+
+      def regex_rgba
+        /(rgba|rgb)\((.*?)\)( |;)/
       end
 
       def hex_shortcode(color)
@@ -33,7 +37,7 @@ module AppSleuth
         scss_files = Dir.glob("**/*.scss")
         
         Dir.chdir(cwd)
-        colors
+        colors.to_json
       end
 
       def gather_from_css(location, colors)
@@ -47,14 +51,17 @@ module AppSleuth
             puts "Error Processing: #{css_file}\n\t#{e.to_s}" 
           end
           parser.each_selector do |selector, declarations, specificity|
-            # if css_colors = declarations.scan(Regexp.new(regex_rgb))
-            #   gather_from_hex(colors, css_colors, declarations, specificity, selector, css_file)
-            # end
-            # if css_colors = declarations.scan(Regexp.new("(#{color_names.join('|')})", true))
-            #   gather_from_name(colors, css_colors, declarations, specificity, selector, css_file)
-            # end
+            if css_colors = declarations.scan(Regexp.new(regex_hex))
+              gather_from_hex(colors, css_colors, declarations, specificity, selector, css_file)
+            end
+            if css_colors = declarations.scan(Regexp.new("(#{color_names.join('|')})", true))
+              gather_from_name(colors, css_colors, declarations, specificity, selector, css_file)
+            end
             if css_colors = declarations.scan(Regexp.new(regex_hsla))
               gather_from_hsla(colors, css_colors, declarations, specificity, selector, css_file)
+            end
+            if css_colors = declarations.scan(Regexp.new(regex_rgba))
+              gather_from_rgba(colors, css_colors, declarations, specificity, selector, css_file)
             end
           end
         end
@@ -64,7 +71,7 @@ module AppSleuth
         css_colors.each do |c|
           c = c.first
           attribute = declarations.split(";").find_all{|a| a.include?(c)}
-          attributes = attribute.map{|a| v = a.split(":").map(&:chomp); {key: v.first, value: v.last}}
+          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
           color = Color::RGB.from_html(c)
           if colors.has_key?(color.css_rgba)
             colors[color.css_rgba][:instances] << instance("hex", specificity, selector, css_file, attributes)
@@ -79,7 +86,7 @@ module AppSleuth
         css_colors.each do |c|
           c = c.first
           attribute = declarations.split(";").find_all{|a| a.include?(c)}
-          attributes = attribute.map{|a| v = a.split(":").map(&:chomp); {key: v.first.chomp, value: v.last.chomp}}
+          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
           color = Color::RGB.const_get(c.classify)
           if colors.has_key?(color.css_rgba)
             colors[color.css_rgba][:instances] << instance("name", specificity, selector, css_file, attributes)
@@ -90,8 +97,64 @@ module AppSleuth
         end
       end
 
+      def gather_from_hsla(colors, css_colors, declarations, specificity, selector, css_file)
+        css_colors.each do |c|
+          type, color_value, throw_away = c
+          from = color_value.include?("%") ? :percent : :fraction
+          attribute = declarations.split(";").find_all{|a| a.include?(color_value)}
+          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
+          h, s, l, alpha = color_value.split(",").map(&:strip)
+          if from == :percent
+            color = Color::HSL.new(h.to_i,s.to_i,l.to_i)
+          else
+            color = Color::HSL.from_fraction(h,s,l)
+          end
+          transparency = !((alpha.to_f||1) == 1)
+          rgba = rgb_alpha(color.to_rgb, alpha)
+          hsla = hsl_alpha(color.to_hsl, alpha)
+          if colors.has_key?(rgba)
+            colors[rgba][:instances] << instance(type, specificity, selector, css_file, attributes)
+            colors[rgba][:count] += 1
+          else
+            colors[rgba] = {transparency: transparency, html: color.html, rgb: color.css_rgb, hsl: color.css_hsl, rgba: rgba, hsla: hsla, count: 1, instances: [instance(type, specificity, selector, css_file, attributes)]}
+          end
+        end
+      end
+
+      def gather_from_rgba(colors, css_colors, declarations, specificity, selector, css_file)
+        css_colors.each do |c|
+          type, color_value, throw_away = c
+          from = color_value.include?("%") ? :percent : :numbers
+          attribute = declarations.split(";").find_all{|a| a.include?(color_value)}
+          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
+          r, g, b, alpha = color_value.split(",").map(&:strip)
+          if from == :percent
+            color = Color::RGB.from_percentage(r.to_i,g.to_i,b.to_i)
+          else
+            color = Color::RGB.new(r.to_i,g.to_i,b.to_i)
+          end
+          transparency = !(alpha.nil? || alpha.to_f == 1)
+          rgba = rgb_alpha(color.to_rgb, alpha)
+          hsla = hsl_alpha(color.to_hsl, alpha)
+          if colors.has_key?(rgba)
+            colors[rgba][:instances] << instance(type, specificity, selector, css_file, attributes)
+            colors[rgba][:count] += 1
+          else
+            colors[rgba] = {transparency: transparency, html: color.html, rgb: color.css_rgb, hsl: color.css_hsl, rgba: rgba, hsla: hsla, count: 1, instances: [instance(type, specificity, selector, css_file, attributes)]}
+          end
+        end
+      end
+
+      def rgb_alpha(color, alpha)
+        "rgba(%3.2f%%, %3.2f%%, %3.2f%%, %3.2f)" % [ color.red_p, color.green_p, color.blue_p, (alpha||1) ]
+      end
+
+      def hsl_alpha(color, alpha)
+        "hsla(%3.2f, %3.2f%%, %3.2f%%, %3.2f)" % [ color.hue, color.saturation, color.luminosity, (alpha||1) ]
+      end
+
       def instance(found_as, specificity, selector, css_file, attributes)
-        {found_as: found_as, specificity: specificity, selector: selector, extension: File.extname(css_file).gsub(".",''), file_name: File.basename(css_file), file: css_file, attribute: attributes, selector_path: selector.split(" ")}
+        {found_as: found_as, specificity: specificity, selector: selector, extension: File.extname(css_file).gsub(".",''), file_name: File.basename(css_file), file: css_file, attribute: attributes, selector_path: selector.split(" "), base_class: !(selector.include?('.') || selector.include?('#'))}
       end
 
       # def gather(location)

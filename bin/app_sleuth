@@ -14,7 +14,7 @@ colors_file.close
 puts "Done with color report"
 
 puts "Starting Server on port 4567"
+puts "Go to http://localhost:4567"
 
 AppSleuth::Server.run!
 
-puts "Go to http://localhost:4567"
