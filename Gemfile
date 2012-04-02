@@ -5,3 +5,6 @@ gemspec
 gem 'rake'
 gem 'rack'
 gem 'sinatra'
+gem 'color'
+gem 'css_parser'
+gem 'active_support'

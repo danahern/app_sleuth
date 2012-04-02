@@ -16,5 +16,8 @@ Gem::Specification.new do |gem|
   gem.version       = AppSleuth::VERSION
 
   gem.add_dependency "sinatra"
-  
+  gem.add_dependency "color"
+  gem.add_dependency "css_parser"
+  gem.add_dependency "active_support"
+
 end
