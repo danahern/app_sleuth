@@ -13,15 +13,15 @@ module AppSleuth
 
 
       def regex_hex
-        /(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})( |;)/
+        /(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})[ |;]/
       end
 
       def regex_hsla
-        /(hsla|hsl)\((.*?)\)( |;)/
+        /(hsla|hsl)\((.*?)\)[ |;]/
       end
 
       def regex_rgba
-        /(rgba|rgb)\((.*?)\)( |;)/
+        /(rgba|rgb)\((.*?)\)[ |;]/
       end
 
       def hex_shortcode(color)
@@ -51,28 +51,33 @@ module AppSleuth
             puts "Error Processing: #{css_file}\n\t#{e.to_s}" 
           end
           parser.each_selector do |selector, declarations, specificity|
-            if css_colors = declarations.scan(Regexp.new(regex_hex))
+            if css_colors = declarations.scan(Regexp.new(regex_hex, true))
               gather_from_hex(colors, css_colors, declarations, specificity, selector, css_file)
             end
             if css_colors = declarations.scan(Regexp.new("(#{color_names.join('|')})", true))
               gather_from_name(colors, css_colors, declarations, specificity, selector, css_file)
             end
-            if css_colors = declarations.scan(Regexp.new(regex_hsla))
+            if css_colors = declarations.scan(Regexp.new(regex_hsla, true))
               gather_from_hsla(colors, css_colors, declarations, specificity, selector, css_file)
             end
-            if css_colors = declarations.scan(Regexp.new(regex_rgba))
+            if css_colors = declarations.scan(Regexp.new(regex_rgba, true))
               gather_from_rgba(colors, css_colors, declarations, specificity, selector, css_file)
             end
           end
         end
       end
 
+      def attributes_from(declarations, color)
+        attributes = declarations.split(";").find_all{|a| a.include?(color)}
+        attributes = attributes.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
+        attributes
+      end
+
       def gather_from_hex(colors, css_colors, declarations, specificity, selector, css_file)
         css_colors.each do |c|
-          c = c.first
-          attribute = declarations.split(";").find_all{|a| a.include?(c)}
-          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
-          color = Color::RGB.from_html(c)
+          color_value = c.first
+          attributes = attributes_from(declarations, color_value)
+          color = Color::RGB.from_html(color_value)
           if colors.has_key?(color.css_rgba)
             colors[color.css_rgba][:instances] << instance("hex", specificity, selector, css_file, attributes)
             colors[color.css_rgba][:count] += 1
@@ -84,9 +89,8 @@ module AppSleuth
 
       def gather_from_name(colors, css_colors, declarations, specificity, selector, css_file)
         css_colors.each do |c|
-          c = c.first
-          attribute = declarations.split(";").find_all{|a| a.include?(c)}
-          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
+          color_value = c.first
+          attributes = attributes_from(declarations, color_value)
           color = Color::RGB.const_get(c.classify)
           if colors.has_key?(color.css_rgba)
             colors[color.css_rgba][:instances] << instance("name", specificity, selector, css_file, attributes)
@@ -101,8 +105,7 @@ module AppSleuth
         css_colors.each do |c|
           type, color_value, throw_away = c
           from = color_value.include?("%") ? :percent : :fraction
-          attribute = declarations.split(";").find_all{|a| a.include?(color_value)}
-          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
+          attributes = attributes_from(declarations, color_value)
           h, s, l, alpha = color_value.split(",").map(&:strip)
           if from == :percent
             color = Color::HSL.new(h.to_i,s.to_i,l.to_i)
@@ -125,8 +128,7 @@ module AppSleuth
         css_colors.each do |c|
           type, color_value, throw_away = c
           from = color_value.include?("%") ? :percent : :numbers
-          attribute = declarations.split(";").find_all{|a| a.include?(color_value)}
-          attributes = attribute.map{|a| v = a.split(":").map(&:strip); {key: v.first, value: v.last}}
+          attributes = attributes_from(declarations, color_value)
           r, g, b, alpha = color_value.split(",").map(&:strip)
           if from == :percent
             color = Color::RGB.from_percentage(r.to_i,g.to_i,b.to_i)
@@ -194,7 +196,6 @@ module AppSleuth
 
       def generate_report(location)
         colors = gather(location)
-        colors = colors.map{|c| color_swatch(c, location) }.join("\n\n")
         gem_dir = File.dirname(File.expand_path(__FILE__))
         rendered_file = ERB.new(File.read(File.join(gem_dir, "server/views/colors.html.erb")))
         rendered_file.result(binding)
