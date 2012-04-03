@@ -50,19 +50,23 @@ module AppSleuth
           rescue => e
             puts "Error Processing: #{css_file}\n\t#{e.to_s}" 
           end
-          parser.each_selector do |selector, declarations, specificity|
-            if css_colors = declarations.scan(Regexp.new(regex_hex))
-              gather_from_hex(colors, css_colors, declarations, specificity, selector, css_file)
-            end
-            if css_colors = declarations.scan(Regexp.new("(#{color_names.join('|')})", true))
-              gather_from_name(colors, css_colors, declarations, specificity, selector, css_file)
-            end
-            if css_colors = declarations.scan(Regexp.new(regex_hsla))
-              gather_from_hsla(colors, css_colors, declarations, specificity, selector, css_file)
-            end
-            if css_colors = declarations.scan(Regexp.new(regex_rgba))
-              gather_from_rgba(colors, css_colors, declarations, specificity, selector, css_file)
-            end
+          parse_from_css(parser, css_file)
+        end
+      end
+
+      def parse_from_css(parser, file_name)
+        parser.each_selector do |selector, declarations, specificity|
+          if css_colors = declarations.scan(Regexp.new(regex_hex))
+            gather_from_hex(colors, css_colors, declarations, specificity, selector, file_name)
+          end
+          if css_colors = declarations.scan(Regexp.new("(#{color_names.join('|')})", true))
+            gather_from_name(colors, css_colors, declarations, specificity, selector, file_name)
+          end
+          if css_colors = declarations.scan(Regexp.new(regex_hsla))
+            gather_from_hsla(colors, css_colors, declarations, specificity, selector, file_name)
+          end
+          if css_colors = declarations.scan(Regexp.new(regex_rgba))
+            gather_from_rgba(colors, css_colors, declarations, specificity, selector, file_name)
           end
         end
       end
@@ -71,7 +75,8 @@ module AppSleuth
         Dir.chdir(File.expand_path(location))
         scss_files = Dir.glob("**/*.scss")
         scss_files.each do |scss_file|
-          #
+          scss_file = Sass::SCSS.compile_file(scss)
+          File.new(File.join('/', "tmp", #{File.basename(scss)}))
         end
       end
 
