@@ -11,6 +11,7 @@
   <meta name="viewport" content="width=device-width">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/libs/modernizr-2.5.3.min.js"></script>
+  <script src="js/libs/handlebars-1.0.0.beta.6.js"></script>
   <script>
     colors = <%= colors %>;
   </script>
@@ -20,8 +21,15 @@
   <header>
 
   </header>
+  <script id="swatches" type="text/x-handlebars-template">
+    <ul>
+      {{#each colors}}
+      <li data-hex='{{this}}' data-color-lookup='{{this.instances}}' class='swatch' style='background-color:{{this}};'><a class='close delete'>x</a><span class='help'>Double Click To Bring to Front</span></li>
+      {{/each}}
+    </ul>
+  </script>
   <div id="main" role="main">
-    
+
   </div>
   <footer>
 
