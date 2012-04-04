@@ -50,11 +50,11 @@ module AppSleuth
           rescue => e
             puts "Error Processing: #{css_file}\n\t#{e.to_s}" 
           end
-          parse_from_css(parser, css_file)
+          parse_from_css(colors, parser, css_file)
         end
       end
 
-      def parse_from_css(parser, file_name)
+      def parse_from_css(colors, parser, file_name)
         parser.each_selector do |selector, declarations, specificity|
           if css_colors = declarations.scan(Regexp.new(regex_hex))
             gather_from_hex(colors, css_colors, declarations, specificity, selector, file_name)
@@ -76,7 +76,7 @@ module AppSleuth
         scss_files = Dir.glob("**/*.scss")
         scss_files.each do |scss_file|
           scss_file = Sass::SCSS.compile_file(scss)
-          File.new(File.join('/', "tmp", #{File.basename(scss)}))
+          File.new(File.join('/', "tmp", File.basename(scss)))
         end
       end
 
@@ -146,16 +146,16 @@ module AppSleuth
         "hsla(%3.2f, %3.2f%%, %3.2f%%, %3.2f)" % [ color.hue, color.saturation, color.luminosity, (alpha.to_f||1) ]
       end
 
-      def instance(found_as, specificity, selector, css_file, attributes)
-        {found_as: found_as, specificity: specificity, selector: selector, extension: File.extname(css_file).gsub(".",''), file_name: File.basename(css_file), file: css_file, attribute: attributes, selector_path: selector.split(" "), base_class: !(selector.include?('.') || selector.include?('#'))}
+      def instance(found_as, specificity, selector, css_file, attributes, transparency, rgba, hsla)
+        {found_as: found_as, specificity: specificity, selector: selector, extension: File.extname(css_file).gsub(".",''), file_name: File.basename(css_file), file: css_file, attribute: attributes, selector_path: selector.split(" "), base_class: !(selector.include?('.') || selector.include?('#')), transparency: transparency, rgba: rgba, hsla: hsla}
       end
 
       def add_to_color(colors, color, found_as, specificity, selector, css_file, attributes, transparency, rgba, hsla)
-        if colors.has_key?(rgba)
-          colors[rgba][:instances] << instance(found_as, specificity, selector, css_file, attributes)
-          colors[rgba][:count] += 1
+        if colors.has_key?(color.html)
+          colors[color.html][:instances] << instance(found_as, specificity, selector, css_file, attributes, transparency, rgba, hsla)
+          colors[color.html][:count] += 1
         else
-          colors[rgba] = {transparency: transparency, html: color.html, rgb: color.css_rgb, hsl: color.css_hsl, rgba: rgba, hsla: hsla, count: 1, instances: [instance(found_as, specificity, selector, css_file, attributes)]}
+          colors[color.html] = {html: color.html, rgb: color.css_rgb, hsl: color.css_hsl, count: 1, instances: [instance(found_as, specificity, selector, css_file, attributes, transparency, rgba, hsla)]}
         end
       end
 
