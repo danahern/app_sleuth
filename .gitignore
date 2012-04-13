@@ -14,7 +14,7 @@ rdoc
 spec/reports
 test/tmp
 test/version_tmp
-tmp
+
 
 # OS generated files #
 ######################
