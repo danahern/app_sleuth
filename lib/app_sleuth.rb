@@ -2,7 +2,7 @@ require 'erb'
 require 'sinatra'
 require 'color'
 require 'css_parser'
-require 'sass'
+# require 'sass'
 require 'active_support/inflector'
 require 'json'
 

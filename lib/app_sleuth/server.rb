@@ -16,7 +16,9 @@ module AppSleuth
     end
     
     get '/colors' do
-      File.read("/tmp/colors.html")
+      @colors = File.read("tmp/colors.json")
+      erb :colors
+      # File.read("/tmp/colors.html")
     end
   end
 end
