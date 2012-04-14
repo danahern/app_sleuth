@@ -28,14 +28,14 @@
   </div>
 
   <div id="main" role="main">
-    <ul id="colors"></ul>
+    <ul id="swatches"></ul>
   </div>
 
   <footer></footer>
 
   <script id="colorItemTemplate" type="text/x-handlebars-template">
       {{#each colors}}
-      <li data-hex='{{this}}' data-color-lookup='{{this.instances}}' class='swatch' style='background-color:{{this}};'><a class='close delete'>x</a><span class='help'>Double Click To Bring to Front</span></li>
+      <li data-hex='{{hex}}' data-color-lookup='' class='swatch' style='background-color:{{hex}};'><a class='close delete'>x</a><span class='help'>Double Click To Bring to Front</span></li>
       {{/each}}
   </script>
 
