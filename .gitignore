@@ -17,6 +17,7 @@ test/version_tmp
 tmp
 .sass-cache/
 .rvmrc
+lib/app_sleuth/server/assets/dynamic/*.json
 
 # OS generated files #
 .DS_Store*

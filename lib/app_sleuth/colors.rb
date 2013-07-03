@@ -1,3 +1,4 @@
+Color::RGB.constants.each{|cons| Color::RGB.const_set(cons.to_s.capitalize, Color::RGB.const_get(cons)) if cons.to_s.capitalize != cons.to_s }
 module AppSleuth
   class Colors
     class << self
