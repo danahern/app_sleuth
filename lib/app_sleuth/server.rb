@@ -14,11 +14,10 @@ module AppSleuth
     get '/' do
       "<a href='/colors'>Colors</a>"
     end
-    
+
     get '/colors' do
-      @colors = File.read("tmp/colors.json")
+      @colors = JSON.parse(File.read("tmp/colors.json"))
       erb :colors
-      # File.read("/tmp/colors.html")
     end
   end
 end

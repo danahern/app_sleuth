@@ -202,7 +202,7 @@ module AppSleuth
       end
 
       def write_report(dir)
-        colors_file = File.new("/tmp/colors.html", "w+")
+        colors_file = File.new(File.join(GEM_PATH, "app_sleuth/server/assets/dynamic/colors.json"), "w+")
         color_report = AppSleuth::Colors.generate_report(dir)
         colors_file.puts color_report
         colors_file.close

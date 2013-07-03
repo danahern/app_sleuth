@@ -14,4 +14,5 @@ require "app_sleuth/fonts"
 require "app_sleuth/server"
 
 module AppSleuth
+  GEM_PATH = File.dirname(__FILE__)
 end
