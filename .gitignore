@@ -16,8 +16,8 @@ test/tmp
 test/version_tmp
 tmp
 .sass-cache/
+
 # OS generated files #
-######################
 .DS_Store*
 ehthumbs.db
 Icon?
