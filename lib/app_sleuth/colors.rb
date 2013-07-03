@@ -34,8 +34,8 @@ module AppSleuth
         cwd = Dir.getwd
         colors = {}
         gather_from_css(location, colors)
-        gather_from_scss(location, colors)
-        
+        # gather_from_scss(location, colors)
+
         Dir.chdir(cwd)
         colors.to_json
       end
@@ -48,7 +48,7 @@ module AppSleuth
             parser = CssParser::Parser.new
             parser.load_file!(css_file, "", :all)
           rescue => e
-            puts "Error Processing: #{css_file}\n\t#{e.to_s}" 
+            puts "Error Processing: #{css_file}\n\t#{e.to_s}"
           end
           parse_from_css(colors, parser, css_file)
         end
@@ -183,22 +183,22 @@ module AppSleuth
 
       #   # colors.map{|c| hex_shortcode(c) }.uniq.sort
       # end
-      
+
       # def color_location(color_code, location)
       #   c = `egrep --include='*.*css' -ir '(#{color_code})( |;)' #{location}`.split("\n")
       # end
 
       # def color_swatch(color, location)
-      #   # colors.each{|color| 
+      #   # colors.each{|color|
       #     "<li data-hex='#{color}' data-color-lookup='#{color_location(color, location)}' class='swatch' style='background-color:#{color};'><a class='close delete'>x</a><span class='help'>Double Click To Bring to Front</span></li>"
       #   # }
       # end
 
       def generate_report(location)
         colors = gather(location)
-        gem_dir = File.dirname(File.expand_path(__FILE__))
-        rendered_file = ERB.new(File.read(File.join(gem_dir, "server/views/colors.html.erb")))
-        rendered_file.result(binding)
+        # gem_dir = File.dirname(File.expand_path(__FILE__))
+        # rendered_file = ERB.new(File.read(File.join(gem_dir, "server/views/colors.html.erb")))
+        # rendered_file.result(binding)
       end
 
       def write_report(dir)
